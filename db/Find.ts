@@ -6,8 +6,8 @@ class Find extends Mongo {
     super();
   }
 
-  async findOne(collection, query, dbName) {
-    const isConnect = await this.connectAll(dbName);
+  async findOne(collection, query) {
+    const isConnect = await this.connectAll();
     if (!isConnect) {
       console.log("MongoDB connection error");
       return;

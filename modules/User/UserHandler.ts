@@ -1,54 +1,68 @@
 import RequestHandle from "../../core/RequestHandle.ts";
 import Find from "../../db/Find.ts";
+import Insert from "../../db/Insert.ts";
 import config from "../../config/config.ts";
+import getRandomString from "./../../utils/getRandomString.ts";
 
 class UserHandler extends RequestHandle {
   constructor() {
     super();
     this.shema = {
-      login: { type: "string", regExp: /^[\w\.\d-_`]+@[\w\.\d-_]+\.\w{2,4}$/i },
+      email: { type: "string", regExp: /^[\w\.\d-_`]+@[\w\.\d-_]+\.\w{2,4}$/i },
       password: { type: "string" },
-      repeatPassword: { type: "string" },
-      nickName: { type: "string" },
+      passwordConfirm: { type: "string" },
+      fullName: { type: "string" },
     };
   }
-  async registerUser(userData, res) {
+  async registerUser(userData, req, res) {
     if (!this.checkSchema(userData, this.shema)) {
       this.sendBadRequest(res);
       return;
     }
-    console.log(userData);
-    const { login, password, repeatPassword } = userData;
-    if (password !== repeatPassword) {
-      this.sendResponse(
-        res,
-        { error: "Passwords do not match" },
-        "application/json",
-        400
-      );
+
+    const msgResponse = {
+      status: false,
+      data: {},
+    };
+    const { fullName, password, passwordConfirm, email } = userData;
+    if (password !== passwordConfirm) {
+      msgResponse.data = { error: "Passwords do not match" };
+      this.sendResponse(res, msgResponse, "application/json", 400);
       return;
     }
-    if (await this.checkExistUSer(login)) {
-      this.sendResponse(
-        res,
-        { error: "User already exists" },
-        "application/json",
-        400
-      );
+    if (await this.checkExistUSer(email)) {
+      msgResponse.data = { error: "User already exists" };
+      this.sendResponse(res, msgResponse, "application/json", 400);
       return;
+    }
+
+    const newUser = {
+      email: email,
+      password,
+      fullName: fullName,
+      createdAt: new Date(),
+    };
+
+    const insertResult = await Insert.insertOne(config.db.collections.users, {
+      doc: newUser,
+    });
+    if (insertResult.acknowledged) {
+    } else {
+      console.log("Вставка документа юзера пройшла невдало");
     }
   }
 
-  async checkExistUSer(login: string) {
+  async checkExistUSer(email: string) {
     const existingUser = await Find.findOne(config.db.collections.users, {
-      login,
+      email,
     });
     return !!existingUser;
   }
+
   async getUserProfile(undefined, req, res) {
     const sessionId = this.getCookies(req, res, "sessionId");
     if (!sessionId) {
-      this.sendResponse(res, { status: true, data: 111 }, "application/json");
+      this.sendResponse(res, { status: false, data: null }, "application/json");
       return;
     }
     // try {
@@ -83,6 +97,21 @@ class UserHandler extends RequestHandle {
     //     500
     //   );
     // }
+  }
+
+  setCookieUser(userId, cookie = getRandomString(config.cookieSize)) {
+    // const cookie = getRandomString(config.cookieSize);
+    const optionsForUpdate = {
+      collectionName: config.db.collections.users,
+      filtr: {
+        _id: userId,
+      },
+      updateDoc: {
+        $set: { cookie: cookie, "date.addCookie": new Date() },
+      },
+    };
+    update.one(optionsForUpdate).then((resultUpdate) => {});
+    return cookie;
   }
 }
 

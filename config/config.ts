@@ -7,5 +7,6 @@ export default {
   },
   server: {
     port: 4000,
-  }
+  },
+  cookieSize: 100,
 };
