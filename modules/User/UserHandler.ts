@@ -1,6 +1,7 @@
 import RequestHandle from "../../core/RequestHandle.ts";
 import Find from "../../db/Find.ts";
 import Insert from "../../db/Insert.ts";
+import Update from "../../db/Update.ts";
 import config from "../../config/config.ts";
 import getRandomString from "./../../utils/getRandomString.ts";
 
@@ -47,6 +48,14 @@ class UserHandler extends RequestHandle {
       doc: newUser,
     });
     if (insertResult.acknowledged) {
+      const cookie = await this.addCookieDB(insertResult.insertedId);
+      if (cookie) {
+        this.setCookies(req, res, config.cookies.names.session, cookie);
+        this.sendResponse(res, {}, "application/json")
+        // await this.getUserProfile(undefined, req, res);
+      } else {
+        this.sendBadRequest(res);
+      }
     } else {
       console.log("Вставка документа юзера пройшла невдало");
     }
@@ -60,11 +69,13 @@ class UserHandler extends RequestHandle {
   }
 
   async getUserProfile(undefined, req, res) {
-    const sessionId = this.getCookies(req, res, "sessionId");
+    const sessionId = this.getCookies(req, res, config.cookies.names.session);
+    console.log(sessionId)
     if (!sessionId) {
       this.sendResponse(res, { status: false, data: null }, "application/json");
       return;
     }
+    console.log(123);
     // try {
     //   const user = await Find.findOne(config.db.collections.users, {
     //     _id: new ObjectId(sessionId),
@@ -99,18 +110,22 @@ class UserHandler extends RequestHandle {
     // }
   }
 
-  setCookieUser(userId, cookie = getRandomString(config.cookieSize)) {
-    // const cookie = getRandomString(config.cookieSize);
+  async addCookieDB(
+    userId,
+    cookie = getRandomString(config.cookies.cookieSize)
+  ) {
     const optionsForUpdate = {
-      collectionName: config.db.collections.users,
       filtr: {
         _id: userId,
       },
       updateDoc: {
-        $set: { cookie: cookie, "date.addCookie": new Date() },
+        $set: { cookie: cookie, addCookie: new Date() },
       },
     };
-    update.one(optionsForUpdate).then((resultUpdate) => {});
+    const updateResult = await Update.one(
+      config.db.collections.users,
+      optionsForUpdate
+    );
     return cookie;
   }
 }

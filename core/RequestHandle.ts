@@ -29,6 +29,8 @@ class RequestHandle {
       return;
     }
     res.writeHead(statusCode, { "Content-Type": contentType });
+
+
     const responseData =
       typeof data === "object" && contentType === "application/json"
         ? JSON.stringify(data)
@@ -84,6 +86,15 @@ class RequestHandle {
   getCookies(req, res, cookiesName) {
     const cookies = new Cookies(req, res);
     return cookies.get(cookiesName);
+  }
+
+  setCookies(req, res, cookiesName, cookiesValue) {
+    const cookies = new Cookies(req, res);
+    console.log(`cookiesName: ${cookiesName}, cookiesValue: ${cookiesValue}`);
+    cookies.set(cookiesName, cookiesValue, {
+      httpOnly: false,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
   }
 }
 

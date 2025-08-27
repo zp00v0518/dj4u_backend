@@ -8,5 +8,11 @@ export default {
   server: {
     port: 4000,
   },
-  cookieSize: 100,
+  
+  cookies: {
+    cookieSize: 100,
+    names: {
+      session: "sessionId",
+    }
+  }
 };
