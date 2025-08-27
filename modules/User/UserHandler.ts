@@ -51,8 +51,8 @@ class UserHandler extends RequestHandle {
       const cookie = await this.addCookieDB(insertResult.insertedId);
       if (cookie) {
         this.setCookies(req, res, config.cookies.names.session, cookie);
-        this.sendResponse(res, {}, "application/json")
-        // await this.getUserProfile(undefined, req, res);
+        // this.sendResponse(res, {}, "application/json")
+        await this.getUserProfile(undefined, req, res, cookie);
       } else {
         this.sendBadRequest(res);
       }
@@ -68,46 +68,38 @@ class UserHandler extends RequestHandle {
     return !!existingUser;
   }
 
-  async getUserProfile(undefined, req, res) {
-    const sessionId = this.getCookies(req, res, config.cookies.names.session);
-    console.log(sessionId)
+  async getUserProfile(undefined, req, res, cookiesValue?) {
+    const sessionId = cookiesValue
+      ? cookiesValue
+      : this.getCookies(req, res, config.cookies.names.session);
     if (!sessionId) {
-      this.sendResponse(res, { status: false, data: null }, "application/json");
+      this.unauthorized(res);
       return;
     }
-    console.log(123);
-    // try {
-    //   const user = await Find.findOne(config.db.collections.users, {
-    //     _id: new ObjectId(sessionId),
-    //   });
+    try {
+      const user = await Find.findOne(
+        config.db.collections.users,
+        {
+          cookie: sessionId,
+        },
+        { projection: { email: true, fullName: true } }
+      );
 
-    //   if (!user) {
-    //     this.sendResponse(
-    //       res,
-    //       { error: "Unauthorized" },
-    //       "application/json",
-    //       401
-    //     );
-    //     return;
-    //   }
+      if (!user) {
+        this.unauthorized(res);
+        return;
+      }
 
-    //   // Видаляємо чутливі дані (наприклад, пароль) перед відправкою
-    //   const userProfile = {
-    //     _id: user._id,
-    //     login: user.login,
-    //     nickName: user.nickName,
-    //   };
-
-    //   this.sendResponse(res, userProfile, "application/json", 200);
-    // } catch (error) {
-    //   console.error("Помилка при отриманні профілю:", error);
-    //   this.sendResponse(
-    //     res,
-    //     { error: "Internal Server Error" },
-    //     "application/json",
-    //     500
-    //   );
-    // }
+      this.sendResponse(res, user, "application/json", 200);
+    } catch (error) {
+      console.error("Помилка при отриманні профілю:", error);
+      this.sendResponse(
+        res,
+        { error: "Internal Server Error" },
+        "application/json",
+        500
+      );
+    }
   }
 
   async addCookieDB(
@@ -127,6 +119,10 @@ class UserHandler extends RequestHandle {
       optionsForUpdate
     );
     return cookie;
+  }
+
+  async unauthorized(res) {
+    this.sendResponse(res, { status: false, data: null }, "application/json");
   }
 }
 
