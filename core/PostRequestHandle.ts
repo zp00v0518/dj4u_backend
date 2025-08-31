@@ -18,7 +18,7 @@ class PostRequestHandle extends RequestHandle {
       this.reqOn(req, (data) => {
         const parsedData = data ? tryJsonParse(data) : null;
         try {
-          handler(parsedData, req, res);
+          handler(req, res, parsedData);
         } catch (error) {
           this.sendResponse(
             res,

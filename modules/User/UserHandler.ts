@@ -1,9 +1,9 @@
 import RequestHandle from "../../core/RequestHandle.ts";
-import Find from "../../db/Find.ts";
 import Insert from "../../db/Insert.ts";
 import Update from "../../db/Update.ts";
 import config from "../../config/config.ts";
 import getRandomString from "./../../utils/getRandomString.ts";
+import UserDB from "../../db/modules/UserDB.ts";
 
 class UserHandler extends RequestHandle {
   constructor() {
@@ -15,25 +15,19 @@ class UserHandler extends RequestHandle {
       fullName: { type: "string" },
     };
   }
-  async registerUser(userData, req, res) {
+  async registerUser(req, res, userData) {
     if (!this.checkSchema(userData, this.shema)) {
       this.sendBadRequest(res);
       return;
     }
 
-    const msgResponse = {
-      status: false,
-      data: {},
-    };
     const { fullName, password, passwordConfirm, email } = userData;
     if (password !== passwordConfirm) {
-      msgResponse.data = { error: "Passwords do not match" };
-      this.sendResponse(res, msgResponse, "application/json", 400);
+      this.sendUserData(res, { error: "Passwords do not match" }, false);
       return;
     }
     if (await this.checkExistUSer(email)) {
-      msgResponse.data = { error: "User already exists" };
-      this.sendResponse(res, msgResponse, "application/json", 400);
+      this.sendUserData(res, { error: "User already exists" }, false);
       return;
     }
 
@@ -48,58 +42,45 @@ class UserHandler extends RequestHandle {
       doc: newUser,
     });
     if (insertResult.acknowledged) {
-      const cookie = await this.addCookieDB(insertResult.insertedId);
-      if (cookie) {
-        this.setCookies(req, res, config.cookies.names.session, cookie);
-        // this.sendResponse(res, {}, "application/json")
-        await this.getUserProfile(undefined, req, res, cookie);
-      } else {
-        this.sendBadRequest(res);
-      }
+      await this.autorizeUser(req, res, insertResult.insertedId);
     } else {
       console.log("Вставка документа юзера пройшла невдало");
     }
   }
 
   async checkExistUSer(email: string) {
-    const existingUser = await Find.findOne(config.db.collections.users, {
-      email,
-    });
-    return !!existingUser;
+    const user = await UserDB.findUserByEmail(email);
+    return !!user;
   }
 
-  async getUserProfile(undefined, req, res, cookiesValue?) {
+  async sendUserData(res, user = null, status = false) {
+    const msgResponse = {
+      status,
+      data: user,
+    };
+    this.sendResponse(res, msgResponse, "application/json", 200);
+  }
+
+  async getUserProfileByCookie(req, res, cookiesValue?) {
     const sessionId = cookiesValue
       ? cookiesValue
       : this.getCookies(req, res, config.cookies.names.session);
-    if (!sessionId) {
+    const user = await UserDB.findUserByCookies(sessionId, {
+      projection: { email: true, fullName: true },
+    });
+
+    return user;
+  }
+
+  async getUserProfile(req, res) {
+    const user = await this.getUserProfileByCookie(req, res);
+    if(!user){
       this.unauthorized(res);
       return;
     }
-    try {
-      const user = await Find.findOne(
-        config.db.collections.users,
-        {
-          cookie: sessionId,
-        },
-        { projection: { email: true, fullName: true } }
-      );
 
-      if (!user) {
-        this.unauthorized(res);
-        return;
-      }
-
-      this.sendResponse(res, user, "application/json", 200);
-    } catch (error) {
-      console.error("Помилка при отриманні профілю:", error);
-      this.sendResponse(
-        res,
-        { error: "Internal Server Error" },
-        "application/json",
-        500
-      );
-    }
+      this.sendUserData(res, user, true);
+      return;
   }
 
   async addCookieDB(
@@ -122,7 +103,47 @@ class UserHandler extends RequestHandle {
   }
 
   async unauthorized(res) {
-    this.sendResponse(res, { status: false, data: null }, "application/json");
+    this.sendResponse(res, { status: false }, "application/json");
+  }
+
+  async loginUser(req, res, userData) {
+    const { email, password } = userData;
+    if (
+      !this.checkSchema(userData, {
+        email: this.shema.email,
+        password: this.shema.password,
+      })
+    ) {
+      this.sendBadRequest(res);
+      return;
+    }
+    const user = await UserDB.findUserByEmail(email);
+    if (!user) {
+      this.sendUserData(res, { error: "User not found" }, false);
+      return;
+    }
+
+    if (!this.passwordCompare(password, user.password)) {
+      this.sendUserData(res, { error: "Password is incorrect" }, false);
+      return;
+    }
+
+    await this.autorizeUser(req, res, user._id);
+  }
+
+  async passwordCompare(targetPassword: string, currentPassword: string) {
+    return targetPassword === currentPassword;
+  }
+
+  async autorizeUser(req, res, userId) {
+    const cookie = await this.addCookieDB(userId);
+    if (cookie) {
+      this.setCookies(req, res, config.cookies.names.session, cookie);
+      const user = await this.getUserProfileByCookie(req, res, cookie);
+      this.sendUserData(res, user, true);
+    } else {
+      this.sendBadRequest(res);
+    }
   }
 }
 

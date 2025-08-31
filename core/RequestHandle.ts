@@ -90,7 +90,6 @@ class RequestHandle {
 
   setCookies(req, res, cookiesName, cookiesValue) {
     const cookies = new Cookies(req, res);
-    console.log(`cookiesName: ${cookiesName}, cookiesValue: ${cookiesValue}`);
     cookies.set(cookiesName, cookiesValue, {
       httpOnly: false,
       maxAge: 1000 * 60 * 60 * 24 * 7,
