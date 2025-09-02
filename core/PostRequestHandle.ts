@@ -15,19 +15,30 @@ class PostRequestHandle extends RequestHandle {
         this.sendResponse(res, "<h1>Method Not Allowed</h1>", "text/html", 404);
         return;
       }
-      this.reqOn(req, (data) => {
-        const parsedData = data ? tryJsonParse(data) : null;
-        try {
-          handler(req, res, parsedData);
-        } catch (error) {
-          this.sendResponse(
-            res,
-            "<h1>reqOn Not Allowed</h1>",
-            "text/html",
-            405
-          );
-        }
-      });
+      const contentType = req.headers["content-type"];
+      if (
+        contentType &&
+        (contentType.includes("multipart/form-data") ||
+          contentType.includes("application/x-www-form-urlencoded"))
+      ) {
+        handler(req, res);
+      } else {
+        this.reqOn(req, (data) => {
+          let parsedData = data;
+          parsedData = data ? tryJsonParse(data) : null;
+
+          try {
+            handler(req, res, parsedData);
+          } catch (error) {
+            this.sendResponse(
+              res,
+              "<h1>reqOn Not Allowed</h1>",
+              "text/html",
+              405
+            );
+          }
+        });
+      }
     } else {
       this.sendResponse(res, "<h1>Method Not Allowed</h1>", "text/html", 405);
     }

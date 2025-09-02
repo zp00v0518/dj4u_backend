@@ -16,6 +16,7 @@ class RequestHandle {
       ".ico": "image/x-icon",
       ".html": "text/html",
       ".manifest": "text/cache-manifest",
+      ".mp3": "audio/mpeg",
     };
   }
   sendResponse(
