@@ -3,8 +3,10 @@ import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { IncomingMessage } from "node:http";
 import formidable, { errors as formidableErrors } from "formidable";
+import UserHandler from "../../modules/User/UserHandler.ts";
+import FileService from "../FileService/FileService.ts";
 
-class FileHandler extends RequestHandle {
+class MixHandler extends RequestHandle {
   async handleMultipartUpload(req: IncomingMessage, res: any) {
     const contentType = req.headers["content-type"];
     if (!contentType || !contentType.startsWith("multipart/form-data")) {
@@ -110,8 +112,20 @@ class FileHandler extends RequestHandle {
   }
 
   async uploadFileFromUser(req: any, res: any) {
+    const userProfile = await UserHandler.getUserProfileByCookie(req, res);
+    if (!userProfile) {
+      this.sendBadRequest(res);
+      return;
+    }
+    const userFolder = await FileService.createDirectoryForUser(
+      userProfile._id.toString()
+    );
     const options = {
-      uploadDir: undefined,
+      uploadDir: userFolder,
+      filename: (name, ext, part, form) => {
+        const { originalFilename } = part;
+        return originalFilename;
+      },
     };
     const form = formidable(options);
     try {
@@ -119,13 +133,12 @@ class FileHandler extends RequestHandle {
       console.log(fields, files);
     } catch (err) {
       console.log(err);
-      if (err.code === formidableErrors.maxFieldsExceeded) {
-      }
-      res.writeHead(err.httpCode || 400, { "Content-Type": "text/plain" });
-      res.end(String(err));
+      // if (err.code === formidableErrors.maxFieldsExceeded) {
+      // }
+      this.sendBadRequest(res);
       return;
     }
   }
 }
 
-export default new FileHandler();
+export default new MixHandler();

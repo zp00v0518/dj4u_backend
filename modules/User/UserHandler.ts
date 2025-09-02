@@ -65,6 +65,7 @@ class UserHandler extends RequestHandle {
     const sessionId = cookiesValue
       ? cookiesValue
       : this.getCookies(req, res, config.cookies.names.session);
+    if (!sessionId) return null;
     const user = await UserDB.findUserByCookies(sessionId, {
       projection: { email: true, fullName: true },
     });
@@ -74,13 +75,13 @@ class UserHandler extends RequestHandle {
 
   async getUserProfile(req, res) {
     const user = await this.getUserProfileByCookie(req, res);
-    if(!user){
+    if (!user) {
       this.unauthorized(res);
       return;
     }
 
-      this.sendUserData(res, user, true);
-      return;
+    this.sendUserData(res, user, true);
+    return;
   }
 
   async addCookieDB(
