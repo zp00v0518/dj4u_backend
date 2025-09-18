@@ -1,3 +1,4 @@
+import { IncomingMessage } from "node:http";
 import http from "node:http";
 import PostRequestHandle from "./PostRequestHandle.ts";
 
@@ -18,7 +19,7 @@ class Server {
     this.server.on(eventName, requestListener);
   }
 
-  handleRequest(req, res) {
+  handleRequest(req: IncomingMessage, res) {
     this.handleCORS(req, res);
 
     if (req.method === "OPTIONS") {

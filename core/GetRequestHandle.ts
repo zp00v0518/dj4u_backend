@@ -1,10 +1,11 @@
+import { IncomingMessage } from "node:http";
 import path from "path";
 import url from "url";
 import RequestHandle from "./RequestHandle.ts";
 import Cookies from "cookies";
 
 class GetRequestHandle extends RequestHandle {
-  async requestHandle(req: any, res: any) {
+  async requestHandle(req: IncomingMessage, res: any) {
     let urlParse = url.parse(req.url, true);
     let pathUrl = urlParse.path;
     const contentFolder = "./dist";

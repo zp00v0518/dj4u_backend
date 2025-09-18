@@ -1,9 +1,10 @@
+import { IncomingMessage } from "node:http";
 import RequestHandle from "./RequestHandle.ts";
 import handlerList from "./handlerList.ts";
 import tryJsonParse from "../utils/tryJsonParse.ts";
 
 class PostRequestHandle extends RequestHandle {
-  requestHandle(req: any, res: any) {
+  requestHandle(req: IncomingMessage, res: any) {
     const url = req.url;
     const method = req.method;
     const apiUrl = "/api";

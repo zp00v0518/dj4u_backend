@@ -1,3 +1,4 @@
+import { IncomingMessage } from "node:http";
 import RequestHandle from "../../core/RequestHandle.ts";
 import Insert from "../../db/Insert.ts";
 import Update from "../../db/Update.ts";
@@ -15,7 +16,7 @@ class UserHandler extends RequestHandle {
       fullName: { type: "string" },
     };
   }
-  async registerUser(req, res, userData) {
+  async registerUser(req: IncomingMessage, res, userData) {
     if (!this.checkSchema(userData, this.shema)) {
       this.sendBadRequest(res);
       return;
@@ -73,7 +74,7 @@ class UserHandler extends RequestHandle {
     return user;
   }
 
-  async getUserProfile(req, res) {
+  async getUserProfile(req: IncomingMessage, res) {
     const user = await this.getUserProfileByCookie(req, res);
     if (!user) {
       this.unauthorized(res);
@@ -107,7 +108,7 @@ class UserHandler extends RequestHandle {
     this.sendResponse(res, { status: false }, "application/json");
   }
 
-  async loginUser(req, res, userData) {
+  async loginUser(req: IncomingMessage, res, userData) {
     const { email, password } = userData;
     if (
       !this.checkSchema(userData, {
@@ -136,7 +137,7 @@ class UserHandler extends RequestHandle {
     return targetPassword === currentPassword;
   }
 
-  async autorizeUser(req, res, userId) {
+  async autorizeUser(req: IncomingMessage, res, userId) {
     const cookie = await this.addCookieDB(userId);
     if (cookie) {
       this.setCookies(req, res, config.cookies.names.session, cookie);

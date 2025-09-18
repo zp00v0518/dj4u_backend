@@ -1,3 +1,4 @@
+import { IncomingMessage } from "node:http";
 import { readFile } from "node:fs/promises";
 import fs from "node:fs";
 import { pipeline } from "node:stream/promises";
@@ -40,7 +41,7 @@ class RequestHandle {
     res.end(responseData);
   }
 
-  requestHandle(req: any, res: any) {
+  requestHandle(req: IncomingMessage, res: any) {
     console.log("requestHandle -  method not implemented");
   }
 
@@ -58,7 +59,7 @@ class RequestHandle {
     }
   }
 
-  reqOn(req, callback = function (a) {}) {
+  reqOn(req: IncomingMessage, callback = function (a) {}) {
     return new Promise((resolve, reject) => {
       try {
         let data = "";
@@ -84,12 +85,12 @@ class RequestHandle {
     this.sendResponse(res, message, "text/plain", 400);
   }
 
-  getCookies(req, res, cookiesName) {
+  getCookies(req: IncomingMessage, res, cookiesName) {
     const cookies = new Cookies(req, res);
     return cookies.get(cookiesName);
   }
 
-  setCookies(req, res, cookiesName, cookiesValue) {
+  setCookies(req: IncomingMessage, res, cookiesName, cookiesValue) {
     const cookies = new Cookies(req, res);
     cookies.set(cookiesName, cookiesValue, {
       httpOnly: false,

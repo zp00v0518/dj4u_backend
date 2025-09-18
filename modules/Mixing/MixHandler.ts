@@ -111,7 +111,7 @@ class MixHandler extends RequestHandle {
     });
   }
 
-  async uploadFileFromUser(req: any, res: any) {
+  async uploadFileFromUser(req: IncomingMessage, res: any) {
     const userProfile = await UserHandler.getUserProfileByCookie(req, res);
     if (!userProfile) {
       this.sendBadRequest(res);
@@ -120,24 +120,34 @@ class MixHandler extends RequestHandle {
     const userFolder = await FileService.createDirectoryForUser(
       userProfile._id.toString()
     );
-    const options = {
-      uploadDir: userFolder,
-      filename: (name, ext, part, form) => {
-        const { originalFilename } = part;
-        return originalFilename;
-      },
-    };
-    const form = formidable(options);
-    try {
-      const [fields, files] = await form.parse(req);
-      console.log(fields, files);
-    } catch (err) {
-      console.log(err);
-      // if (err.code === formidableErrors.maxFieldsExceeded) {
-      // }
+
+    const saveResult = await FileService.saveFilesToFileSystem(req, userFolder);
+
+    if (!saveResult) {
       this.sendBadRequest(res);
       return;
+    } else {
+      console.log(saveResult);
     }
+
+    // const options = {
+    //   uploadDir: userFolder,
+    //   filename: (name, ext, part, form) => {
+    //     const { originalFilename } = part;
+    //     return `${Date.now()}_${originalFilename}`;
+    //   },
+    // };
+    // const form = formidable(options);
+    // try {
+    //   const [fields, files] = await form.parse(req);
+    //   console.log(fields, files);
+    // } catch (err) {
+    //   console.log(err);
+    //   // if (err.code === formidableErrors.maxFieldsExceeded) {
+    //   // }
+    //   this.sendBadRequest(res);
+    //   return;
+    // }
   }
 }
 
