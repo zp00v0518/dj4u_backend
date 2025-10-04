@@ -5,8 +5,9 @@ import FileService from "../FileService/FileService.ts";
 import HistoryService from "../HistoryService/HistoryService.ts";
 import Mixer from "../../mixer/Mixer.ts";
 import HistoryDB from "../../db/modules/HistoryDB.ts";
-import config from '../../config/config.ts'
-import fs from "node:fs/promises";
+import config from "../../config/config.ts";
+import * as fs from 'node:fs';
+import * as fsPromises from 'node:fs/promises';
 import path from "node:path";
 
 class MixHandler extends RequestHandle {
@@ -47,7 +48,11 @@ class MixHandler extends RequestHandle {
       this.sendBadRequest(res);
     }
     await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixResult);
-    this.sendResponse(res, { status: true }, {"Content-Type":"application/json"});
+    this.sendResponse(
+      res,
+      { status: true },
+      { "Content-Type": "application/json" }
+    );
   }
 
   async downloadFileFromUser(req: IncomingMessage, res: any) {
@@ -57,12 +62,26 @@ class MixHandler extends RequestHandle {
       return;
     }
     const userID = userProfile._id.toString();
-    const userDir = FileService.getPathToUserMixes(userID)
-    const filename = req.url.replace(config.server.downloadUrl, '')
-    console.log(path.resolve(userDir, filename));
-    const fsStat = await fs.stat(path.resolve(userDir, filename))
-    console.log(fsStat)
-    // this.sendResponse(res, { status: true }, "application/json");
+    const userDir = FileService.getPathToUserMixes(userID);
+    const filename = req.url.replace(config.server.downloadUrl, "");
+    const filePath = path.resolve(userDir, filename);
+    const fsStat = await fsPromises.stat(filePath);
+
+    res.writeHead(200, {
+      "Content-Type": "application/octet-stream",
+      "Content-Length": fsStat.size,
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    });
+
+    const readStream = fs.createReadStream(filePath);
+    readStream.pipe(res);
+    readStream.on("error", (streamErr) => {
+      console.error("File stream error:", streamErr);
+      if (!res.headersSent) {
+        res.writeHead(500, { "Content-Type": "text/plain" });
+      }
+      res.end();
+    });
   }
 }
 
