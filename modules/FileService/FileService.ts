@@ -6,7 +6,34 @@ import { IncomingMessage } from "node:http";
 
 class FileService {
   async createDirectoryForUser(userId: string) {
+    const uploadDir = await this.createUploadFolderForUser(userId);
+    if (!uploadDir) {
+      return false;
+    }
+    const mixesDir = await this.createMixesFolderForUser(userId);
+    if (!mixesDir) {
+      return false;
+    }
+    return uploadDir;
+  }
+
+  async createUploadFolderForUser(userId: string) {
     const userDir = path.join(config.files.uploadDir, userId);
+    try {
+      await fs.access(userDir, fs.constants.X_OK);
+      return userDir;
+    } catch (err) {
+      if (err.code === "ENOENT") {
+        await fs.mkdir(userDir, { recursive: true });
+        return userDir;
+      }
+      console.log(err);
+      return false;
+    }
+  }
+
+  async createMixesFolderForUser(userId: string) {
+    const userDir = path.join(config.files.mixesDir, userId);
     try {
       await fs.access(userDir, fs.constants.X_OK);
       return userDir;
@@ -34,7 +61,7 @@ class FileService {
       if (files.length < 2) return;
       return {
         fields,
-        files: files.files
+        files: files.files,
       };
     } catch (err) {
       console.log(err);

@@ -19,6 +19,6 @@ export default {
   },
   files: {
     uploadDir: path.resolve(path.dirname(process.argv[1]), 'uploads'),
-    mixinDir: 'mixins'
+    mixesDir: path.resolve(path.dirname(process.argv[1]), 'mixes'),
   }
 };
