@@ -4,6 +4,7 @@ import UserHandler from "../../modules/User/UserHandler.ts";
 import FileService from "../FileService/FileService.ts";
 import HistoryService from "../HistoryService/HistoryService.ts";
 import Mixer from "../../mixer/Mixer.ts";
+import HistoryDB from "../../db/modules/HistoryDB.ts";
 
 class MixHandler extends RequestHandle {
   async uploadFileFromUser(req: IncomingMessage, res: any) {
@@ -12,9 +13,8 @@ class MixHandler extends RequestHandle {
       this.sendBadRequest(res);
       return;
     }
-    const userFolder = await FileService.createDirectoryForUser(
-      userProfile._id.toString()
-    );
+    const userID = userProfile._id.toString();
+    const userFolder = await FileService.createDirectoryForUser(userID);
 
     const saveResult = await FileService.saveFilesToFileSystem(req, userFolder);
 
@@ -23,9 +23,10 @@ class MixHandler extends RequestHandle {
       return;
     }
     const files = saveResult.files;
+    const filesNames = files.map((i) => i.newFilename);
     const addResult = await HistoryService.addFilesToUserHistory(
-      userProfile._id.toString(),
-      files
+      userID,
+      filesNames
     );
 
     if (!addResult) {
@@ -33,13 +34,17 @@ class MixHandler extends RequestHandle {
       return;
     }
 
-    this.sendResponse(res, { status: true }, "application/json");
     const mixer = new Mixer();
     const mixResult = await mixer.executeCommand(
       userProfile._id.toString(),
-      files.map((i) => i.newFilename)
+      filesNames
     );
-    console.log(mixResult);
+    if (!mixResult) {
+      await HistoryDB.setStatusHistoryItem(userID, filesNames, "canceled");
+      this.sendBadRequest(res);
+    }
+    await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixResult);
+    this.sendResponse(res, { status: true }, "application/json");
   }
 }
 
