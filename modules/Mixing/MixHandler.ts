@@ -47,10 +47,11 @@ class MixHandler extends RequestHandle {
       await HistoryDB.setStatusHistoryItem(userID, filesNames, "canceled");
       this.sendBadRequest(res);
     }
-    await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixResult);
+    const mixName = mixResult + '.wav'
+    await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixName);
     this.sendResponse(
       res,
-      { status: true, fileName: mixResult },
+      { status: true, fileName: mixName },
       { "Content-Type": "application/json" }
     );
   }
