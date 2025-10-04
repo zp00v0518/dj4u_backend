@@ -3,7 +3,7 @@ import { IncomingMessage } from "node:http";
 import UserHandler from "../../modules/User/UserHandler.ts";
 import FileService from "../FileService/FileService.ts";
 import HistoryService from "../HistoryService/HistoryService.ts";
-import Mixer from "../../mixer/Mixer.ts";
+import Mixer from "../../mixer/mixer.ts";
 import HistoryDB from "../../db/modules/HistoryDB.ts";
 import config from "../../config/config.ts";
 import * as fs from "node:fs";
