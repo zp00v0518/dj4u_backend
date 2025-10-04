@@ -19,7 +19,9 @@ export default {
     }
   },
   files: {
-    uploadDir: path.resolve(path.dirname(process.argv[1]), 'uploads'),
-    mixesDir: path.resolve(path.dirname(process.argv[1]), 'mixes'),
+    uploadDir: path.resolve(process.cwd(), 'uploads'),
+    mixesDir: path.resolve(process.cwd(), 'mixes'),
+    // uploadDir: path.resolve(path.dirname(process.argv[1]), 'uploads'),
+    // mixesDir: path.resolve(path.dirname(process.argv[1]), 'mixes'),
   }
 };
