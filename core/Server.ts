@@ -1,10 +1,13 @@
 import { IncomingMessage } from "node:http";
 import http from "node:http";
 import PostRequestHandle from "./PostRequestHandle.ts";
+import GetRequestHandle from "./GetRequestHandle.ts";
+import config from '../config/config.ts'
 
 class Server {
   constructor() {
     this.postRequestHandle = new PostRequestHandle().getHandler();
+    this.getRequestHandle = new GetRequestHandle().getHandler();
   }
 
   init(port) {
@@ -28,6 +31,8 @@ class Server {
       return;
     }
     if (req.method === "GET") {
+      if (!req.url.includes(config.server.downloadUrl)) return;
+      this.getRequestHandle(req, res);
       return;
     }
     if (req.method === "POST") {

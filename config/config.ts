@@ -9,6 +9,7 @@ export default {
   },
   server: {
     port: 4000,
+    downloadUrl: '/api/file/download/'
   },
   
   cookies: {

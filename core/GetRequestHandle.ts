@@ -3,6 +3,8 @@ import path from "path";
 import url from "url";
 import RequestHandle from "./RequestHandle.ts";
 import Cookies from "cookies";
+import config from "../config/config.ts";
+import handlerList from "./handlerList.ts";
 
 class GetRequestHandle extends RequestHandle {
   async requestHandle(req: IncomingMessage, res: any) {
@@ -22,6 +24,8 @@ class GetRequestHandle extends RequestHandle {
       this.sendResponse(res, data, "text/html");
     } else if (!ext) {
       this.notFoundRequest(res);
+    } else if (req.url.includes(config.server.downloadUrl)) {
+      handlerList[config.server.downloadUrl](req, res);
     } else {
       const data = await this.fileReader(pathJoin);
       if (!data) {

@@ -46,6 +46,17 @@ class MixHandler extends RequestHandle {
     await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixResult);
     this.sendResponse(res, { status: true }, "application/json");
   }
+
+  async downloadFileFromUser(req: IncomingMessage, res: any) {
+    const userProfile = await UserHandler.getUserProfileByCookie(req, res);
+    if (!userProfile) {
+      this.sendBadRequest(res);
+      return;
+    }
+    const userID = userProfile._id.toString();
+    console.log(userID)
+    console.log(req.url);
+  }
 }
 
 export default new MixHandler();
