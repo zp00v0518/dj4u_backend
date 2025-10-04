@@ -16,6 +16,7 @@ class Mongo {
         monitorCommands: true,
       });
       this.connectToDb(dbName);
+      console.log("Підключення до БД успішне")
       return this.client;
     } catch (error) {
       console.error("MongoDB connection error:", error);
