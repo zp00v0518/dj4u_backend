@@ -59,7 +59,12 @@ class UserHandler extends RequestHandle {
       status,
       data: user,
     };
-    this.sendResponse(res, msgResponse, "application/json", 200);
+    this.sendResponse(
+      res,
+      msgResponse,
+      { "Content-Type": "application/json" },
+      200
+    );
   }
 
   async getUserProfileByCookie(req, res, cookiesValue?) {
@@ -105,7 +110,11 @@ class UserHandler extends RequestHandle {
   }
 
   async unauthorized(res) {
-    this.sendResponse(res, { status: false }, "application/json");
+    this.sendResponse(
+      res,
+      { status: false },
+      { "Content-Type": "application/json" }
+    );
   }
 
   async loginUser(req: IncomingMessage, res, userData) {

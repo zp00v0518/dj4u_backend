@@ -23,18 +23,17 @@ class RequestHandle {
   sendResponse(
     res: any,
     data: any = null,
-    contentType: string = "text/plain",
+    headers = { "Content-Type": "text/plain" },
     statusCode: number = 200
   ) {
     if (res.writableEnded) {
       console.log("Response already ended. Aborting sendResponse.");
       return;
     }
-    res.writeHead(statusCode, { "Content-Type": contentType });
-
+    res.writeHead(statusCode, headers);
 
     const responseData =
-      typeof data === "object" && contentType === "application/json"
+      typeof data === "object" && headers['Content-Type'] === "application/json"
         ? JSON.stringify(data)
         : data;
 
@@ -82,7 +81,7 @@ class RequestHandle {
   }
 
   sendBadRequest(res, message = "Bad Request") {
-    this.sendResponse(res, message, "text/plain", 400);
+    this.sendResponse(res, message, {"Content-Type":"text/plain"}, 400);
   }
 
   getCookies(req: IncomingMessage, res, cookiesName) {

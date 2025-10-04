@@ -21,7 +21,7 @@ class GetRequestHandle extends RequestHandle {
       }
       // const cookies = new Cookies(req, res);
       // cookies.set("token", Math.random().toString(), { maxAge: 1000 * 60 * 60 * 24, httpOnly: false });
-      this.sendResponse(res, data, "text/html");
+      this.sendResponse(res, data, {"Content-Type":"text/html"});
     } else if (!ext) {
       this.notFoundRequest(res);
     } else if (req.url.includes(config.server.downloadUrl)) {
@@ -32,12 +32,12 @@ class GetRequestHandle extends RequestHandle {
         this.notFoundRequest(res);
         return;
       }
-      this.sendResponse(res, data, this.mimeTypes[ext], 200);
+      this.sendResponse(res, data, {"Content-Type": this.mimeTypes[ext]}, 200);
     }
   }
 
   notFoundRequest(res) {
-    this.sendResponse(res, "<h1>404 Not Found</h1>", "text/html", 404);
+    this.sendResponse(res, "<h1>404 Not Found</h1>", {"Content-Type":"text/html"}, 404);
   }
 }
 

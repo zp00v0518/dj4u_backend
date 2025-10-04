@@ -13,7 +13,7 @@ class PostRequestHandle extends RequestHandle {
       const key = url.replace(apiUrl, "");
       const handler = handlerList[key];
       if (!handler) {
-        this.sendResponse(res, "<h1>Method Not Allowed</h1>", "text/html", 404);
+        this.sendResponse(res, "<h1>Method Not Allowed</h1>", {"Content-Type":"text/html"}, 404);
         return;
       }
       const contentType = req.headers["content-type"];
@@ -34,14 +34,14 @@ class PostRequestHandle extends RequestHandle {
             this.sendResponse(
               res,
               "<h1>reqOn Not Allowed</h1>",
-              "text/html",
+              {"Content-Type":"text/html"},
               405
             );
           }
         });
       }
     } else {
-      this.sendResponse(res, "<h1>Method Not Allowed</h1>", "text/html", 405);
+      this.sendResponse(res, "<h1>Method Not Allowed</h1>", {"Content-Type":"text/html"}, 405);
     }
   }
 }

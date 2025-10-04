@@ -32,8 +32,8 @@ class FileService {
     }
   }
 
-  async createMixesFolderForUser(userId: string) {
-    const userDir = path.join(config.files.mixesDir, userId);
+  async createMixesFolderForUser(userID: string) {
+    const userDir = this.getPathToUserMixes(userID)
     try {
       await fs.access(userDir, fs.constants.X_OK);
       return userDir;
@@ -67,6 +67,10 @@ class FileService {
       console.log(err);
       return;
     }
+  }
+
+  getPathToUserMixes(userID) {
+    return path.join(config.files.mixesDir, userID);
   }
 }
 
