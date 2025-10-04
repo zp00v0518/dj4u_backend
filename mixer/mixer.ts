@@ -25,9 +25,9 @@ class Mixer {
     try {
       const { stdout, stderr } = await execPromise(fullCommand);
 
-      if (!stdout.includes("Command: python convert.py")) {
-        console.log('stdout >>>>    ', stdout)
-        console.log('stderr >>>>    ', stderr)
+      if (!stdout.includes("Conversion successful!")) {
+        // console.log('stdout >>>>    ', stdout)
+        // console.log('stderr >>>>    ', stderr)
         return false;
       } else {
         return mixName;
