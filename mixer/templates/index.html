@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>MP3 Processor</title>
+	<style>
+		body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 40px; }
+		.container { max-width: 720px; margin: 0 auto; }
+		.card { border: 1px solid #ddd; border-radius: 12px; padding: 24px; }
+		button { padding: 10px 16px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; cursor: pointer; }
+		button:disabled { opacity: .6; cursor: not-allowed; }
+		input[type=file] { padding: 10px; }
+		.progress { margin-top: 12px; color: #333; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Загрузка MP3 и обработка</h1>
+		<div class="card">
+			<form id="upload-form">
+				<input id="files" name="files" type="file" accept="audio/mpeg,.mp3" multiple required />
+				<div style="height: 12px"></div>
+				<button id="submit" type="submit">Обработать</button>
+			</form>
+			<div id="status" class="progress"></div>
+		</div>
+	</div>
+
+	<script>
+		const form = document.getElementById('upload-form');
+		const statusEl = document.getElementById('status');
+		const submitBtn = document.getElementById('submit');
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			statusEl.textContent = '';
+			submitBtn.disabled = true;
+			try {
+				const filesInput = document.getElementById('files');
+				if (!filesInput.files || filesInput.files.length === 0) {
+					statusEl.textContent = 'Выберите хотя бы один MP3 файл';
+					submitBtn.disabled = false;
+					return;
+				}
+
+				const formData = new FormData();
+				for (const f of filesInput.files) {
+					formData.append('files', f);
+				}
+
+				statusEl.textContent = 'Загружаем и обрабатываем...';
+				const resp = await fetch('/process', { method: 'POST', body: formData });
+				if (!resp.ok) {
+					const text = await resp.text();
+					throw new Error(text || 'Ошибка обработки');
+				}
+
+				const blob = await resp.blob();
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'out.mp3';
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				window.URL.revokeObjectURL(url);
+				statusEl.textContent = 'Готово! Файл out.mp3 загружен.';
+			} catch (err) {
+				statusEl.textContent = 'Ошибка: ' + (err && err.message ? err.message : String(err));
+			} finally {
+				submitBtn.disabled = false;
+			}
+		});
+	</script>
+</body>
+</html>
+
