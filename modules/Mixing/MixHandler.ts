@@ -6,8 +6,8 @@ import HistoryService from "../HistoryService/HistoryService.ts";
 import Mixer from "../../mixer/Mixer.ts";
 import HistoryDB from "../../db/modules/HistoryDB.ts";
 import config from "../../config/config.ts";
-import * as fs from 'node:fs';
-import * as fsPromises from 'node:fs/promises';
+import * as fs from "node:fs";
+import * as fsPromises from "node:fs/promises";
 import path from "node:path";
 
 class MixHandler extends RequestHandle {
@@ -50,7 +50,7 @@ class MixHandler extends RequestHandle {
     await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixResult);
     this.sendResponse(
       res,
-      { status: true },
+      { status: true, fileName: mixResult },
       { "Content-Type": "application/json" }
     );
   }
