@@ -16,9 +16,10 @@ class Mixer {
       return path.join(config.files.uploadDir, userID, name);
     });
 
+console.log(import.meta.dirname)
     const mixName = `mix_${Date.now()}`;
     const mixPath = path.join(config.files.mixesDir, userID, mixName);
-    const fullCommand = `cd app & mix1.exe ${mixPath}  ${filesPath.join(" ")}`;
+    const fullCommand = `cd mixer\\app & mix1.exe ${mixPath}  ${filesPath.join(" ")}`;
 
     try {
       const { stdout, stderr } = await execPromise(fullCommand);
