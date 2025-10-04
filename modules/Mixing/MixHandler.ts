@@ -2,6 +2,7 @@ import RequestHandle from "../../core/RequestHandle.ts";
 import { IncomingMessage } from "node:http";
 import UserHandler from "../../modules/User/UserHandler.ts";
 import FileService from "../FileService/FileService.ts";
+import HistoryService from "../HistoryService/HistoryService.ts";
 
 class MixHandler extends RequestHandle {
   async uploadFileFromUser(req: IncomingMessage, res: any) {
@@ -20,8 +21,17 @@ class MixHandler extends RequestHandle {
       this.sendBadRequest(res);
       return;
     }
-    console.log(saveResult);
+    const addResult = await HistoryService.addFilesToUserHistory(
+      userProfile._id.toString(),
+      saveResult.files
+    );
 
+    if (!addResult) {
+      this.sendBadRequest(res, 'Cannot add to history');
+      return;
+    }
+    
+    this.sendResponse(res, { status: true }, "application/json");
   }
 }
 

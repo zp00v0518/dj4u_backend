@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import Find from "../Find.ts";
 import config from "../../config/config.ts";
 
+
 class UserDB {
   constructor() {}
 
@@ -27,6 +28,8 @@ class UserDB {
     );
     return user;
   }
+
+  
 }
 
 export default new UserDB();

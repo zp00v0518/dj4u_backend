@@ -4,7 +4,6 @@ import config from "../../config/config.ts";
 import formidable, { errors as formidableErrors } from "formidable";
 import { IncomingMessage } from "node:http";
 
-
 class FileService {
   async createDirectoryForUser(userId: string) {
     const userDir = path.join(config.files.uploadDir, userId);
@@ -32,10 +31,11 @@ class FileService {
     const form = formidable(options);
     try {
       const [fields, files] = await form.parse(req);
+      if (files.length < 2) return;
       return {
         fields,
-        files,
-      }
+        files: files.files
+      };
     } catch (err) {
       console.log(err);
       return;
