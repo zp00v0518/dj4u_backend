@@ -14,9 +14,13 @@ class Mixer {
 
     const mixName = `mix_${Date.now()}`;
     const mixPath = path.join(config.files.mixesDir, userID, mixName);
-    const fullCommand = `cd mixer\\app & mix1.exe ${mixPath} ${filesPath.join(
+    //for Linux
+    const fullCommand = `cd  /home & mix1 ${mixPath} ${filesPath.join(
       " "
     )}`;
+    // const fullCommand = `cd mixer\\app & mix1.exe ${mixPath} ${filesPath.join(
+    //   " "
+    // )}`;
 
     try {
       const { stdout } = await execPromise(fullCommand);
