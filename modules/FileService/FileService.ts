@@ -52,7 +52,8 @@ class FileService {
       uploadDir: pathToFolder,
       filename: (name, ext, part, form) => {
         const { originalFilename } = part;
-        return `${Date.now()}_${originalFilename}`;
+        let fileName = originalFilename.replaceAll(' ', '_')
+        return `${Date.now()}_${fileName}`;
       },
     };
     const form = formidable(options);
