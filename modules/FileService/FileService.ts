@@ -52,9 +52,10 @@ class FileService {
       uploadDir: pathToFolder,
       filename: (name, ext, part, form, u) => {
         const { originalFilename } = part;
+        const fileExt = path.extname(originalFilename)
         // let fileName = originalFilename.replaceAll(' ', '_')
         let fileName = Date.now() + "_" + form.bytesExpected
-        return `${Date.now()}_${fileName}`;
+        return `${fileName}${fileExt}`;
       },
     };
     const form = formidable(options);
