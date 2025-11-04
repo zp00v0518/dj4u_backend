@@ -50,9 +50,10 @@ class FileService {
   async saveFilesToFileSystem(req: IncomingMessage, pathToFolder: string) {
     const options = {
       uploadDir: pathToFolder,
-      filename: (name, ext, part, form) => {
+      filename: (name, ext, part, form, u) => {
         const { originalFilename } = part;
-        let fileName = originalFilename.replaceAll(' ', '_')
+        // let fileName = originalFilename.replaceAll(' ', '_')
+        let fileName = Date.now() + "_" + form.bytesExpected
         return `${Date.now()}_${fileName}`;
       },
     };
