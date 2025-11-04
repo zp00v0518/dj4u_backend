@@ -26,7 +26,6 @@ class MixHandler extends RequestHandle {
       this.sendBadRequest(res);
       return;
     }
-    console.log('файли завантажилися')
     const files = saveResult.files;
     const filesNames = files.map((i) => i.newFilename);
     const addResult = await HistoryService.addFilesToUserHistory(
@@ -44,14 +43,13 @@ class MixHandler extends RequestHandle {
       userProfile._id.toString(),
       filesNames
     );
-    console.log('mixResult', mixResult)
     if (!mixResult) {
       await HistoryDB.setStatusHistoryItem(userID, filesNames, "canceled");
       this.sendBadRequest(res);
     }
-    const mixName = mixResult + '.wav'
+    // const mixName = mixResult + '.wav'
 
-    // const mixName = mixResult + '.mp3'
+    const mixName = mixResult + '.mp3'
     await HistoryDB.setMixNameToHistoryItem(userID, filesNames, mixName);
     this.sendResponse(
       res,
